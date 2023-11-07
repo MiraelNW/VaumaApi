@@ -19,14 +19,10 @@ public class AnimeDbModel implements Serializable {
 
     @Id
     private Integer id;
-
     private String name;
     private String russian;
-
     private String multi_name;
-
     private String multi_rus;
-
     @Embedded
     private ImageDbModel image;
     private String kind;
@@ -38,7 +34,8 @@ public class AnimeDbModel implements Serializable {
     private String description;
     private String description_rus;
     private String airedOn;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(columnDefinition = "date")
     private Date releasedOn;
     private String rating;
     private Integer duration;

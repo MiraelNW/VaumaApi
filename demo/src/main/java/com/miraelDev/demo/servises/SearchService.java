@@ -31,6 +31,8 @@ public class SearchService {
             Integer pageSize
     ) {
 
+
+
 //        if (name != null) {
         Slice<AnimeDbModel> resultNameContaining = searchAnimeRepo.findByNameContainingIgnoreCase(name, PageRequest.of(page, pageSize));
         Slice<AnimeDbModel> resultNameStartingWith = searchAnimeRepo.findByNameStartingWithIgnoreCase(name, PageRequest.of(page, pageSize));

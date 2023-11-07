@@ -47,7 +47,7 @@ public class Controller {
         try {
             DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-            for (int i = 1; i < 100; i++) {
+            for (int i = 1; i < 5; i++) {
 
                 try {
                     AnimeInfoDto dto = ApiFactory.apiService.getAnime(i).execute().body();
