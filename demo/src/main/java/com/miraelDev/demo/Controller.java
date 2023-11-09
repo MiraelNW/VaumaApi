@@ -2,14 +2,14 @@ package com.miraelDev.demo;
 
 
 import com.miraelDev.demo.models.dbModels.AnimeDbModel;
+import com.miraelDev.demo.models.dbModels.GenreDbModel;
 import com.miraelDev.demo.models.dbModels.ImageDbModel;
+import com.miraelDev.demo.models.dbModels.SimilarAnimeDbModel;
 import com.miraelDev.demo.models.dto.AnimeInfoDto;
 import com.miraelDev.demo.models.dto.GenreDto;
 import com.miraelDev.demo.models.dto.SimilarAnimeDto;
 import com.miraelDev.demo.models.responseDto.PagingResponseDto;
-import com.miraelDev.demo.servises.AnimeService;
-import com.miraelDev.demo.servises.PagingService;
-import com.miraelDev.demo.servises.SearchService;
+import com.miraelDev.demo.servises.*;
 import com.miraelDev.demo.shikimory.ApiFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -28,7 +28,9 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 public class Controller {
@@ -40,6 +42,11 @@ public class Controller {
     public AnimeService animeService;
 
     @Autowired
+    public GenreService genreService;
+    @Autowired
+    public SimilarAnimeService similarAnimeService;
+
+    @Autowired
     public SearchService searchService;
 
     @GetMapping
@@ -47,7 +54,7 @@ public class Controller {
         try {
             DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-            for (int i = 1; i < 5; i++) {
+            for (int i = 1; i < 100; i++) {
 
                 try {
                     AnimeInfoDto dto = ApiFactory.apiService.getAnime(i).execute().body();
@@ -77,9 +84,24 @@ public class Controller {
                                 .rating(dto.getRating())
                                 .duration(dto.getDuration())
                                 .favoured(dto.getFavoured())
-                                .genres(GenreDto.toDbModelList(dto.getGenres()))
-                                .similar(SimilarAnimeDto.toDbModelList(similarDto))
                                 .build();
+
+                        Set<GenreDbModel> genreDbModelSet = new HashSet<>();
+
+                        for (GenreDto genreDto : dto.getGenres()) {
+                            GenreDbModel genreDbModel = GenreDbModel.builder()
+                                    .id(genreDto.getId())
+                                    .name(genreDto.getName())
+                                    .russian(genreDto.getRussian())
+                                    .build();
+                            genreDbModelSet.add(genreDbModel);
+                        }
+
+                        dbModel.setGenres(genreDbModelSet);
+
+                        Set<SimilarAnimeDbModel> similarAnimeDbModels = new HashSet<>(SimilarAnimeDto.toDbModelList(similarDto));
+
+                        dbModel.setSimilar(similarAnimeDbModels);
 
                         downloadFiles("https://shikimori.one/" + dto.getImage().getPreview(), "C:\\Users\\1\\Desktop\\animes\\preview\\" + dbModel.getId() + ".png", 1);
                         downloadFiles("https://shikimori.one/" + dto.getImage().getOriginal(), "C:\\Users\\1\\Desktop\\animes\\original\\" + dbModel.getId() + ".png", 1);
@@ -89,6 +111,8 @@ public class Controller {
                                         .preview("http://localhost:8080/animes/images/preview/" + dbModel.getId())
                                         .build()
                         );
+                        genreService.saveAll(genreDbModelSet);
+                        similarAnimeService.saveAll(similarAnimeDbModels);
                         animeService.save(dbModel);
                     }
 
@@ -105,6 +129,11 @@ public class Controller {
     @GetMapping("/anime/new")
     public PagingResponseDto getNewAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
         return pagingService.getNewAnime(page, pageSize);
+    }
+
+    @GetMapping("/anime")
+    public PagingResponseDto getAnime() {
+        return pagingService.getAnime();
     }
 
     @GetMapping("/anime/popular")
@@ -136,7 +165,6 @@ public class Controller {
             @RequestParam(value = "page") Integer page,
             @RequestParam(value = "page_size") Integer pageSize
     ) {
-        System.out.println(name);
         return searchService.searchAnime(
                 name,
                 genreCode,

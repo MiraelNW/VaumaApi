@@ -10,6 +10,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PagingService {
 
@@ -22,6 +24,14 @@ public class PagingService {
         return PagingResponseDto
                 .builder()
                 .animeResponseDtoList(AnimeResponseDto.toDbModelList(result.getContent()))
+                .build();
+    }
+
+    public PagingResponseDto getAnime() {
+        List<AnimeDbModel> result = pagingRepo.findAll();
+        return PagingResponseDto
+                .builder()
+                .animeResponseDtoList(AnimeResponseDto.toDbModelList(result))
                 .build();
     }
 

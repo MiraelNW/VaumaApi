@@ -4,15 +4,18 @@ import com.miraelDev.demo.models.dbModels.GenreDbModel;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class GenreDto {
+    private Integer id;
     private String name;
     private String russian;
 
-    public static List<GenreDbModel> toDbModelList(List<GenreDto> dtos) {
-        List<GenreDbModel> dbModelList = new ArrayList<GenreDbModel>();
+    public static Set<GenreDbModel> toDbModelList(List<GenreDto> dtos) {
+        Set<GenreDbModel> dbModelList = new HashSet<GenreDbModel>();
         for (GenreDto dto : dtos) {
             dbModelList.add(toDbModel(dto));
         }
@@ -20,6 +23,6 @@ public class GenreDto {
     }
 
     private static GenreDbModel toDbModel(GenreDto dto) {
-        return new GenreDbModel(dto.getName(), dto.getRussian());
+        return new GenreDbModel(dto.getId(), dto.getName(), dto.getRussian());
     }
 }

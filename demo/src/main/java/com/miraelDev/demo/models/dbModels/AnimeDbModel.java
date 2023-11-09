@@ -3,26 +3,26 @@ package com.miraelDev.demo.models.dbModels;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-@Data
-@Entity
+@EqualsAndHashCode
+@Getter
+@Setter
 @NoArgsConstructor
+@Entity
 public class AnimeDbModel implements Serializable {
 
     @Id
     private Integer id;
     private String name;
     private String russian;
-    private String multi_name;
-    private String multi_rus;
     @Embedded
     private ImageDbModel image;
     private String kind;
@@ -40,15 +40,19 @@ public class AnimeDbModel implements Serializable {
     private String rating;
     private Integer duration;
     private Boolean favoured;
-    @ElementCollection
-    @CollectionTable(name = "genres_model")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private List<GenreDbModel> genres;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "genre_model",
+            joinColumns = @JoinColumn(name = "anime_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id"))
+    @EqualsAndHashCode.Exclude private Set<GenreDbModel> genres = new HashSet<>();
 
-    @ElementCollection
-    @CollectionTable(name = "similar_model")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private List<SimilarAnimeDbModel> similar;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "similar_model",
+            joinColumns = @JoinColumn(name = "anime_id"),
+            inverseJoinColumns = @JoinColumn(name = "similar_id"))
+    @EqualsAndHashCode.Exclude private Set<SimilarAnimeDbModel> similar = new HashSet<>();
 
     @Builder
     public AnimeDbModel(
@@ -68,8 +72,8 @@ public class AnimeDbModel implements Serializable {
             String rating,
             Integer duration,
             Boolean favoured,
-            List<GenreDbModel> genres,
-            List<SimilarAnimeDbModel> similar
+            Set<GenreDbModel> genres,
+            Set<SimilarAnimeDbModel> similar
     ) {
         this.id = id;
         this.name = name;

@@ -1,17 +1,23 @@
 package com.miraelDev.demo.models.dbModels;
 
-import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
-@Data
+@EqualsAndHashCode
+@Getter
+@Setter
+@AllArgsConstructor
 @NoArgsConstructor
-@Embeddable
+@Entity
 public class SimilarAnimeDbModel {
-
+    @Id
     private Integer id;
     private String name;
     private String russian;
@@ -20,6 +26,9 @@ public class SimilarAnimeDbModel {
     private String kind;
     private Float score;
     private String rating;
+
+    @ManyToMany(mappedBy = "similar")
+    private Set<AnimeDbModel> animeSet = new HashSet<AnimeDbModel>();
 
     @Builder
     public SimilarAnimeDbModel(

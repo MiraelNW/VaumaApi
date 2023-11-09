@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 @Data
@@ -40,7 +41,7 @@ public class SimilarResponseDto {
         this.rating = rating;
     }
 
-    public static List<SimilarResponseDto> toDbModelList(List<SimilarAnimeDbModel> dbModels) {
+    public static List<SimilarResponseDto> toDbModelList(Set<SimilarAnimeDbModel> dbModels) {
         List<SimilarResponseDto> dbModelList = new ArrayList<SimilarResponseDto>();
         for (SimilarAnimeDbModel dbModel : dbModels) {
             dbModelList.add(toDbModel(dbModel));

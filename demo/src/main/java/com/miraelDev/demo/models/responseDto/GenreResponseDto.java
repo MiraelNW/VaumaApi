@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -25,7 +26,7 @@ public class GenreResponseDto {
 
 
 
-    public static List<GenreResponseDto> toDbModelList(List<GenreDbModel> dbModels) {
+    public static List<GenreResponseDto> toDbModelList(Set<GenreDbModel> dbModels) {
         List<GenreResponseDto> dbModelList = new ArrayList<GenreResponseDto>();
         for (GenreDbModel dbModel : dbModels) {
             dbModelList.add(toDbModel(dbModel));
@@ -34,6 +35,6 @@ public class GenreResponseDto {
     }
 
     private static GenreResponseDto toDbModel(GenreDbModel dbModel) {
-        return new GenreResponseDto(dbModel.getName(), dbModel.getRussian());
+        return new GenreResponseDto(dbModel.getGenreName(), dbModel.getGenreRussian());
     }
 }
