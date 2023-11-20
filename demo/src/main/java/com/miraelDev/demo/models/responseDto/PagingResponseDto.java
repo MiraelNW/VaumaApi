@@ -10,13 +10,16 @@ import java.util.List;
 @NoArgsConstructor
 public class PagingResponseDto {
 
+    private Boolean isLast;
     private List<AnimeResponseDto> animeResponseDtoList;
 
     @Builder
     public PagingResponseDto(
-            List<AnimeResponseDto> animeResponseDtoList
+            List<AnimeResponseDto> animeResponseDtoList,
+            Boolean isLast
     ) {
         this.animeResponseDtoList = animeResponseDtoList;
+        this.isLast = isLast;
     }
 
 }

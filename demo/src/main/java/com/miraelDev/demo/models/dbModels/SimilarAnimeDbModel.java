@@ -1,5 +1,6 @@
 package com.miraelDev.demo.models.dbModels;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -28,6 +29,7 @@ public class SimilarAnimeDbModel {
     private String rating;
 
     @ManyToMany(mappedBy = "similar")
+    @JsonIgnore
     private Set<AnimeDbModel> animeSet = new HashSet<AnimeDbModel>();
 
     @Builder

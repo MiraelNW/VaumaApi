@@ -5,19 +5,17 @@ import com.miraelDev.demo.models.dbModels.AnimeDbModel;
 import com.miraelDev.demo.models.dbModels.GenreDbModel;
 import com.miraelDev.demo.models.dbModels.ImageDbModel;
 import com.miraelDev.demo.models.dbModels.SimilarAnimeDbModel;
-import com.miraelDev.demo.models.dto.AnimeInfoDto;
-import com.miraelDev.demo.models.dto.GenreDto;
-import com.miraelDev.demo.models.dto.SimilarAnimeDto;
+import com.miraelDev.demo.models.responseDto.AnimeResponseDto;
+import com.miraelDev.demo.shikimory.dto.AnimeInfoDto;
+import com.miraelDev.demo.shikimory.dto.GenreDto;
+import com.miraelDev.demo.shikimory.dto.SimilarAnimeDto;
 import com.miraelDev.demo.models.responseDto.PagingResponseDto;
 import com.miraelDev.demo.servises.*;
 import com.miraelDev.demo.shikimory.ApiFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,22 +30,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 @RestController
-public class Controller {
+@RequestMapping("api/v1/anime")
+public class CommonController {
 
     @Autowired
-    public PagingService pagingService;
-
+    private PagingService pagingService;
     @Autowired
-    public AnimeService animeService;
-
+    private AnimeService animeService;
     @Autowired
-    public GenreService genreService;
+    private GenreService genreService;
     @Autowired
-    public SimilarAnimeService similarAnimeService;
-
+    private SimilarAnimeService similarAnimeService;
     @Autowired
-    public SearchService searchService;
+    private SearchService searchService;
 
     @GetMapping
     public void main() {
@@ -107,8 +104,8 @@ public class Controller {
                         downloadFiles("https://shikimori.one/" + dto.getImage().getOriginal(), "C:\\Users\\1\\Desktop\\animes\\original\\" + dbModel.getId() + ".png", 1);
                         dbModel.setImage(
                                 ImageDbModel.builder()
-                                        .original("http://localhost:8080/animes/images/original/" + dbModel.getId())
-                                        .preview("http://localhost:8080/animes/images/preview/" + dbModel.getId())
+                                        .original("http://10.0.2.2:8080/api/v1/anime/images/original/" + dbModel.getId())
+                                        .preview("http://10.0.2.2:8080/api/v1/anime/images/preview/" + dbModel.getId())
                                         .build()
                         );
                         genreService.saveAll(genreDbModelSet);
@@ -126,67 +123,7 @@ public class Controller {
         }
     }
 
-    @GetMapping("/anime/new")
-    public PagingResponseDto getNewAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
-        return pagingService.getNewAnime(page, pageSize);
-    }
-
-    @GetMapping("/anime")
-    public PagingResponseDto getAnime() {
-        return pagingService.getAnime();
-    }
-
-    @GetMapping("/anime/popular")
-    public PagingResponseDto getPopularAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
-        return pagingService.getPopularAnime(page, pageSize);
-    }
-
-    @GetMapping("/anime/name")
-    public PagingResponseDto getNameAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
-        return pagingService.getNameAnime(page, pageSize);
-    }
-
-    @GetMapping("/anime/film")
-    public PagingResponseDto getFilmAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
-        return pagingService.getFilmAnime(page, pageSize);
-    }
-
-    @GetMapping("/anime/{id}")
-    public AnimeDbModel getAnimeById(@PathVariable Long id) {
-        return animeService.getUser(id);
-    }
-
-    @GetMapping("/anime/search")
-    public PagingResponseDto searchAnime(
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "genres", required = false) String genreCode,
-            @RequestParam(value = "date", required = false) String dateCode,
-            @RequestParam(value = "sort", required = false) String sortCode,
-            @RequestParam(value = "page") Integer page,
-            @RequestParam(value = "page_size") Integer pageSize
-    ) {
-        return searchService.searchAnime(
-                name,
-                genreCode,
-                dateCode,
-                sortCode,
-                page,
-                pageSize
-        );
-    }
-
-    @GetMapping(value = "/animes/images/original/{id}", produces = MediaType.IMAGE_PNG_VALUE)
-    public Resource getOriginalImageById(@PathVariable Long id) throws IOException {
-        return animeService.getOriginalImage(id);
-    }
-
-    @GetMapping(value = "/animes/images/preview/{id}", produces = MediaType.IMAGE_PNG_VALUE)
-    public Resource getPreviewImageById(@PathVariable Long id) throws IOException {
-        return animeService.getPreviewImage(id);
-    }
-
-
-    public static void downloadFiles(String strURL, String strPath, int buffSize) {
+    private static void downloadFiles(String strURL, String strPath, int buffSize) {
         try {
             URL connection = new URL(strURL);
             HttpURLConnection urlconn;
@@ -210,5 +147,48 @@ public class Controller {
         }
     }
 
+    @GetMapping("/new")
+    public PagingResponseDto getNewAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
+        return pagingService.getNewAnime(page, pageSize);
+    }
+
+    @GetMapping("/popular")
+    public PagingResponseDto getPopularAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
+        return pagingService.getPopularAnime(page, pageSize);
+    }
+
+    @GetMapping("/name")
+    public PagingResponseDto getNameAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
+        return pagingService.getNameAnime(page, pageSize);
+    }
+
+    @GetMapping("/film")
+    public PagingResponseDto getFilmAnime(@RequestParam("page") Integer page, @RequestParam("page_size") Integer pageSize) {
+        return pagingService.getFilmAnime(page, pageSize);
+    }
+
+    @GetMapping("/{id}")
+    public AnimeResponseDto getAnimeById(@PathVariable Long id) {
+        return animeService.getUser(id);
+    }
+
+    @GetMapping("/search")
+    public PagingResponseDto searchAnime(
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "genres", required = false) String genreCode,
+            @RequestParam(value = "date", required = false) String dateCode,
+            @RequestParam(value = "sort", required = false) String sortCode,
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "page_size") Integer pageSize
+    ) {
+        return searchService.searchAnime(
+                name,
+                genreCode,
+                dateCode,
+                sortCode,
+                page,
+                pageSize
+        );
+    }
 
 }

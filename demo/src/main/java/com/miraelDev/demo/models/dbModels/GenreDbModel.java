@@ -1,5 +1,6 @@
 package com.miraelDev.demo.models.dbModels;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
@@ -22,6 +23,7 @@ public class GenreDbModel {
     private String genreRussian;
 
     @ManyToMany(mappedBy = "genres")
+    @JsonIgnore
     private Set<AnimeDbModel> animeSet = new HashSet<AnimeDbModel>();
 
     @Builder

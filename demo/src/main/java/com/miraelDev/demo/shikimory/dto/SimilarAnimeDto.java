@@ -1,4 +1,4 @@
-package com.miraelDev.demo.models.dto;
+package com.miraelDev.demo.shikimory.dto;
 
 import com.miraelDev.demo.models.dbModels.ImageDbModel;
 import com.miraelDev.demo.models.dbModels.SimilarAnimeDbModel;

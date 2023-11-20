@@ -3,15 +3,19 @@ package com.miraelDev.demo.servises;
 import com.miraelDev.demo.models.dbModels.AnimeDbModel;
 import com.miraelDev.demo.models.responseDto.AnimeResponseDto;
 import com.miraelDev.demo.models.responseDto.PagingResponseDto;
-import com.miraelDev.demo.repositories.SearchAnimeRepo;
+import com.miraelDev.demo.repositories.anime.SearchAnimeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class SearchService {
@@ -28,19 +32,12 @@ public class SearchService {
             Integer page,
             Integer pageSize
     ) {
+        System.out.println(name);
+        System.out.println(parseGenreCode(genreCode));
+        System.out.println(parseYearCode(dateCode));
+        System.out.println(parseSortCode(sortCode));
 
-        List<AnimeDbModel> startingWith = searchAnimeRepo
-                .findAll(
-                        AnimeSearchSpecs
-                                .isNameStartingWith(name)
-                                .or(AnimeSearchSpecs.isRussianStartingWith(name))
-                                .and(AnimeSearchSpecs.isGenreContains(parseGenreCode(genreCode)))
-                                .and(AnimeSearchSpecs.betweenYears(parseYearCode(dateCode))),
-                        PageRequest.of(page, pageSize, parseSortCode(sortCode))
-                )
-                .getContent();
-
-        List<AnimeDbModel> containsWith = searchAnimeRepo
+        Slice<AnimeDbModel> result = searchAnimeRepo
                 .findAll(
                         AnimeSearchSpecs
                                 .isNameContains(name)
@@ -48,20 +45,18 @@ public class SearchService {
                                 .and(AnimeSearchSpecs.isGenreContains(parseGenreCode(genreCode)))
                                 .and(AnimeSearchSpecs.betweenYears(parseYearCode(dateCode))),
                         PageRequest.of(page, pageSize, parseSortCode(sortCode))
-                )
-                .getContent();
+                );
 
-        Set<AnimeDbModel> result = new LinkedHashSet<>();
-        result.addAll(startingWith);
-        result.addAll(containsWith);
 
         return PagingResponseDto
                 .builder()
-                .animeResponseDtoList(AnimeResponseDto.toDbModelList(result))
+                .animeResponseDtoList(AnimeResponseDto.toDtoModelList(result.getContent()))
+                .isLast(result.isLast())
                 .build();
     }
 
     private Map<String, Date> parseYearCode(String yearCode) {
+        if (yearCode == null) return null;
         char[] yearCodeCharArray = yearCode.toCharArray();
         Map<String, Date> resultList = new HashMap<>();
         for (char ch : yearCodeCharArray) {
@@ -113,7 +108,7 @@ public class SearchService {
                 result = Sort.by("episodes").ascending();
             }
             case "new" -> {
-                result = Sort.by("releasedOn").ascending();
+                result = Sort.by("releasedOn").descending();
             }
             default -> {
                 result = Sort.by("releasedOn", "score").descending();

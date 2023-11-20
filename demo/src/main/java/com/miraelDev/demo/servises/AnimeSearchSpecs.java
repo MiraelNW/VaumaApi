@@ -5,11 +5,9 @@ import com.miraelDev.demo.models.dbModels.GenreDbModel;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
-import kotlin.Pair;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;

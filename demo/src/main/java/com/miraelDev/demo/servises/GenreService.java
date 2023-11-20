@@ -1,7 +1,7 @@
 package com.miraelDev.demo.servises;
 
 import com.miraelDev.demo.models.dbModels.GenreDbModel;
-import com.miraelDev.demo.repositories.GenreRepo;
+import com.miraelDev.demo.repositories.anime.GenreRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

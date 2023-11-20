@@ -1,9 +1,8 @@
-package com.miraelDev.demo.models.dto;
+package com.miraelDev.demo.shikimory.dto;
 
 import com.miraelDev.demo.models.dbModels.GenreDbModel;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

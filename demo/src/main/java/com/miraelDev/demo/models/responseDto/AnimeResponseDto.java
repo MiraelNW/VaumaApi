@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -17,10 +16,6 @@ public class AnimeResponseDto {
     private Integer id;
     private String name;
     private String russian;
-
-    private String multi_name;
-
-    private String multi_rus;
     private ImageResponseDto image;
     private String kind;
     private Float score;
@@ -78,22 +73,22 @@ public class AnimeResponseDto {
         this.similar = similar;
     }
 
-    public static List<AnimeResponseDto> toDbModelList(Collection<AnimeDbModel> dbModels) {
+    public static List<AnimeResponseDto> toDtoModelList(Collection<AnimeDbModel> dbModels) {
         List<AnimeResponseDto> animeResponseDtoList = new ArrayList<AnimeResponseDto>();
         for (AnimeDbModel dbModel : dbModels) {
-            animeResponseDtoList.add(toDbModel(dbModel));
+            animeResponseDtoList.add(toDtoModel(dbModel));
         }
         return animeResponseDtoList;
     }
 
-    private static AnimeResponseDto toDbModel(AnimeDbModel dbModel) {
+    public static AnimeResponseDto toDtoModel(AnimeDbModel dbModel) {
         return new AnimeResponseDto(
                 dbModel.getId(),
                 dbModel.getName(),
                 dbModel.getRussian(),
                 ImageResponseDto.builder()
-                        .original("http://localhost:8080/animes/images/original/" + dbModel.getId())
-                        .preview("http://localhost:8080/animes/images/preview/" + dbModel.getId())
+                        .original("http://10.0.2.2:8080/api/v1/anime/images/original/" + dbModel.getId())
+                        .preview("http://10.0.2.2:8080/api/v1/anime/images/preview/" + dbModel.getId())
                         .build(),
                 dbModel.getKind(),
                 dbModel.getScore(),

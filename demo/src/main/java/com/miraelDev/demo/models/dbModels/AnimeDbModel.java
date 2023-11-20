@@ -1,6 +1,8 @@
 package com.miraelDev.demo.models.dbModels;
 
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,14 +11,15 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @EqualsAndHashCode
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AnimeDbModel implements Serializable {
 
     @Id
@@ -40,19 +43,23 @@ public class AnimeDbModel implements Serializable {
     private String rating;
     private Integer duration;
     private Boolean favoured;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "genre_model",
             joinColumns = @JoinColumn(name = "anime_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
-    @EqualsAndHashCode.Exclude private Set<GenreDbModel> genres = new HashSet<>();
+    @EqualsAndHashCode.Exclude
+    private Set<GenreDbModel> genres = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "similar_model",
             joinColumns = @JoinColumn(name = "anime_id"),
             inverseJoinColumns = @JoinColumn(name = "similar_id"))
-    @EqualsAndHashCode.Exclude private Set<SimilarAnimeDbModel> similar = new HashSet<>();
+    @EqualsAndHashCode.Exclude
+    private Set<SimilarAnimeDbModel> similar = new HashSet<>();
 
     @Builder
     public AnimeDbModel(

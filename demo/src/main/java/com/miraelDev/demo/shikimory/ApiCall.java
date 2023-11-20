@@ -1,7 +1,7 @@
 package com.miraelDev.demo.shikimory;
 
-import com.miraelDev.demo.models.dto.AnimeInfoDto;
-import com.miraelDev.demo.models.dto.SimilarAnimeDto;
+import com.miraelDev.demo.shikimory.dto.AnimeInfoDto;
+import com.miraelDev.demo.shikimory.dto.SimilarAnimeDto;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;

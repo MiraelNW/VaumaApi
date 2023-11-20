@@ -1,4 +1,4 @@
-package com.miraelDev.demo.repositories;
+package com.miraelDev.demo.repositories.anime;
 
 import com.miraelDev.demo.models.dbModels.AnimeDbModel;
 import org.springframework.data.domain.Pageable;
