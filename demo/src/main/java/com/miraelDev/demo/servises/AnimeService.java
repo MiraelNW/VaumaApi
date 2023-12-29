@@ -1,11 +1,14 @@
 package com.miraelDev.demo.servises;
 
+import com.miraelDev.demo.models.authModels.user.AppUser;
 import com.miraelDev.demo.models.dbModels.AnimeDbModel;
 import com.miraelDev.demo.models.responseDto.AnimeResponseDto;
-import com.miraelDev.demo.repositories.anime.AnimeRepo;
+import com.miraelDev.demo.repositories.UserRepository;
+import com.miraelDev.demo.repositories.anime.AnimeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,10 +20,39 @@ import java.nio.file.Paths;
 public class AnimeService {
 
     @Autowired
-    private AnimeRepo repo;
+    private AnimeRepository animeRepository;
 
-    public AnimeResponseDto getUser(Long id) {
-        return AnimeResponseDto.toDtoModel(repo.getReferenceById(id));
+    @Autowired
+    private UserRepository userRepository;
+
+    public ResponseEntity<AnimeResponseDto> getAnimeById(Long animeId, Long userId) {
+
+        AnimeDbModel animeDbModel = animeRepository.getReferenceById(animeId);
+
+        AppUser appUser = userRepository.getReferenceById(userId);
+
+        boolean isFavourite = appUser.getAnimeFavouriteList().contains(animeId);
+
+        return ResponseEntity.ok(AnimeResponseDto.toDtoModel(animeDbModel, isFavourite));
+    }
+
+    public ResponseEntity<String> setAnimeFavouriteStatus(Long animeId, Long userId, Boolean isFavourite) {
+
+        boolean isAnimeExist = animeRepository.existsById(animeId);
+
+        if (!isAnimeExist) return ResponseEntity.badRequest().body("anime id is not exist");
+
+        AppUser appUser = userRepository.getReferenceById(userId);
+
+        if (isFavourite) {
+            appUser.getAnimeFavouriteList().add(animeId);
+        } else {
+            appUser.getAnimeFavouriteList().remove(animeId);
+        }
+
+        userRepository.save(appUser);
+
+        return ResponseEntity.ok("save");
     }
 
     public Resource getOriginalImage(Long id) throws IOException {
@@ -39,7 +71,7 @@ public class AnimeService {
     }
 
     public void save(AnimeDbModel dbModel) {
-        repo.save(dbModel);
+        animeRepository.save(dbModel);
     }
 
 }

@@ -35,13 +35,15 @@ public class AuthController {
 
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> registerUser(
-            @RequestParam String email,
-            @RequestParam String username,
-            @RequestParam String password,
+            @RequestParam(value = "name",required = false) String name,
+            @RequestParam(value = "email") String email,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password,
             @RequestParam(value = "file",required = false) MultipartFile userImage
     ) {
 
         AppUser user = new AppUser(
+                name,
                 username,
                 email,
                 encoder.encode(password),

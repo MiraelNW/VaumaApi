@@ -17,7 +17,6 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AnimeDbModel implements Serializable {
@@ -50,6 +49,7 @@ public class AnimeDbModel implements Serializable {
             joinColumns = @JoinColumn(name = "anime_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<GenreDbModel> genres = new HashSet<>();
 
     @JsonIgnore
@@ -59,7 +59,13 @@ public class AnimeDbModel implements Serializable {
             joinColumns = @JoinColumn(name = "anime_id"),
             inverseJoinColumns = @JoinColumn(name = "similar_id"))
     @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<SimilarAnimeDbModel> similar = new HashSet<>();
+
+    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Set<VideoDbModel> videoDbModels = new HashSet<>();
 
     @Builder
     public AnimeDbModel(

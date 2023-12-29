@@ -1,13 +1,14 @@
 package com.miraelDev.demo.servises;
 
 import com.miraelDev.demo.models.dbModels.AnimeDbModel;
-import com.miraelDev.demo.models.responseDto.AnimeResponseDto;
+import com.miraelDev.demo.models.responseDto.PagingAnimeResponseDto;
 import com.miraelDev.demo.models.responseDto.PagingResponseDto;
-import com.miraelDev.demo.repositories.anime.SearchAnimeRepo;
+import com.miraelDev.demo.repositories.anime.SearchAnimeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
@@ -21,10 +22,10 @@ import java.util.Set;
 public class SearchService {
 
     @Autowired
-    SearchAnimeRepo searchAnimeRepo;
+    SearchAnimeRepository searchAnimeRepo;
 
 
-    public PagingResponseDto searchAnime(
+    public ResponseEntity<PagingResponseDto> searchAnime(
             String name,
             String genreCode,
             String dateCode,
@@ -48,11 +49,12 @@ public class SearchService {
                 );
 
 
-        return PagingResponseDto
-                .builder()
-                .animeResponseDtoList(AnimeResponseDto.toDtoModelList(result.getContent()))
-                .isLast(result.isLast())
-                .build();
+        return ResponseEntity.ok(
+                PagingResponseDto.builder()
+                        .animeResponseDtoList(PagingAnimeResponseDto.toDtoModelList(result.getContent()))
+                        .isLast(result.isLast())
+                        .build()
+        );
     }
 
     private Map<String, Date> parseYearCode(String yearCode) {

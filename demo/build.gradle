@@ -13,6 +13,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
@@ -26,9 +27,26 @@ dependencies {
     //postgres
 	implementation 'org.postgresql:postgresql:42.5.0'
 
+
+    ///////////////////////////////////////will be deelted //////////////////////////////
+
     // retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.1.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
+
+    //jsoup
+    implementation("org.jsoup:jsoup:1.14.3")
+
+    //frame decoder
+//    implementation("org.bytedeco:javacv:1.0")
+    implementation("org.jcodec:jcodec:0.2.5")
+    implementation("org.jcodec:jcodec-javase:0.2.5")
+
+    //graphql
+    implementation("com.github.americanexpress.nodes:nodes:0.5.0")
+    implementation("org.springframework.graphql:spring-graphql")
+
+    //////////////////////////////////////////////////////////////////////////////
 
     //spring boot
     implementation 'org.springframework.boot:spring-boot-starter-web'

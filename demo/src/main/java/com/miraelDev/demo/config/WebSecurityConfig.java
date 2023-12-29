@@ -79,10 +79,14 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(new AntPathRequestMatcher("/api/v1/anime/**")).authenticated()
-                                .requestMatchers(new AntPathRequestMatcher("/api/v1/users/image/**")).authenticated()
                                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/**")).permitAll()
-                                .anyRequest().authenticated()
+                                .requestMatchers(new AntPathRequestMatcher("/api/v1/anime/images/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/api/v1/users/image/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/api/v1/anime/")).permitAll()
+                                .anyRequest().permitAll()
+//                                .requestMatchers(new AntPathRequestMatcher("/api/v1/anime/**")).authenticated()
+//                                .requestMatchers(new AntPathRequestMatcher("/api/v1/user/**")).authenticated()
+//                                .anyRequest().authenticated()
                 )
                 .logout(
                         (logout) -> logout

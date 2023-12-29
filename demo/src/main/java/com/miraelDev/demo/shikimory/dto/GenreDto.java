@@ -12,6 +12,7 @@ public class GenreDto {
     private Integer id;
     private String name;
     private String russian;
+    private String kind;
 
     public static Set<GenreDbModel> toDbModelList(List<GenreDto> dtos) {
         Set<GenreDbModel> dbModelList = new HashSet<GenreDbModel>();

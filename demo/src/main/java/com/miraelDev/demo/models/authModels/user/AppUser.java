@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -24,6 +27,7 @@ public class AppUser {
             generator = "user_sequence"
     )
     private Long id;
+    private String name;
     private String username;
     private String email;
     private String password;
@@ -33,12 +37,21 @@ public class AppUser {
     private Boolean locked = false;
     private Boolean enabled = false;
 
+    @ElementCollection
+    @CollectionTable(
+            name = "favourite_anime",
+            joinColumns = @JoinColumn(name = "anime_id")
+    )
+    private Set<Long> animeFavouriteList = new HashSet<>();
+
     public AppUser(
+            String name,
             String username,
             String email,
             String password,
             AppUserRole appUserRole
     ) {
+        this.name = name;
         this.username = username;
         this.email = email;
         this.password = password;

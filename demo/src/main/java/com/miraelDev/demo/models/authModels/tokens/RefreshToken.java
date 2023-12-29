@@ -4,12 +4,14 @@ import com.miraelDev.demo.models.authModels.user.AppUser;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.Instant;
 
 @Entity(name = "refreshtoken")
 @Data
 @NoArgsConstructor
+@ToString
 public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

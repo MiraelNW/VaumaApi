@@ -11,11 +11,11 @@ import java.util.List;
 public class PagingResponseDto {
 
     private Boolean isLast;
-    private List<AnimeResponseDto> animeResponseDtoList;
+    private List<PagingAnimeResponseDto> animeResponseDtoList;
 
     @Builder
     public PagingResponseDto(
-            List<AnimeResponseDto> animeResponseDtoList,
+            List<PagingAnimeResponseDto> animeResponseDtoList,
             Boolean isLast
     ) {
         this.animeResponseDtoList = animeResponseDtoList;

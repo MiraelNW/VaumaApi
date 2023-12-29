@@ -1,13 +1,14 @@
 package com.miraelDev.demo.servises;
 
 import com.miraelDev.demo.models.dbModels.AnimeDbModel;
-import com.miraelDev.demo.models.responseDto.AnimeResponseDto;
+import com.miraelDev.demo.models.responseDto.PagingAnimeResponseDto;
 import com.miraelDev.demo.models.responseDto.PagingResponseDto;
-import com.miraelDev.demo.repositories.anime.PagingRepo;
+import com.miraelDev.demo.repositories.anime.PagingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,51 +17,59 @@ import java.util.List;
 public class PagingService {
 
     @Autowired
-    PagingRepo pagingRepo;
+    PagingRepository pagingRepo;
+
+//    public ResponseEntity<PagingResponseDto> getAnime() {
+//        List<AnimeDbModel> result = pagingRepo.findAll();
+//        return ResponseEntity.ok(
+//                PagingResponseDto
+//                        .builder()
+//                        .animeResponseDtoList(PagingAnimeResponseDto.toDtoModelList(result))
+//                        .build()
+//        );
+//    }
 
 
-    public PagingResponseDto getNewAnime(Integer page, Integer pageSize) {
+    public ResponseEntity<PagingResponseDto> getNewAnime(Integer page, Integer pageSize) {
         Slice<AnimeDbModel> result = pagingRepo.findAllBy(PageRequest.of(page, pageSize, Sort.by("airedOn").descending()));
-        return PagingResponseDto
-                .builder()
-                .animeResponseDtoList(AnimeResponseDto.toDtoModelList(result.getContent()))
-                .isLast(result.isLast())
-                .build();
+        return ResponseEntity.ok(
+                PagingResponseDto.builder()
+                        .animeResponseDtoList(PagingAnimeResponseDto.toDtoModelList(result.getContent()))
+                        .isLast(result.isLast())
+                        .build()
+        );
+
+
     }
 
-    public PagingResponseDto getAnime() {
-        List<AnimeDbModel> result = pagingRepo.findAll();
-        return PagingResponseDto
-                .builder()
-                .animeResponseDtoList(AnimeResponseDto.toDtoModelList(result))
-                .build();
-    }
-
-    public PagingResponseDto getPopularAnime(Integer page, Integer pageSize) {
+    public ResponseEntity<PagingResponseDto> getPopularAnime(Integer page, Integer pageSize) {
         Slice<AnimeDbModel> result = pagingRepo.findAllBy(PageRequest.of(page, pageSize, Sort.by("score").ascending()));
-        return PagingResponseDto
-                .builder()
-                .animeResponseDtoList(AnimeResponseDto.toDtoModelList(result.getContent()))
-                .isLast(result.isLast())
-                .build();
+        return ResponseEntity.ok(
+                PagingResponseDto.builder()
+                        .animeResponseDtoList(PagingAnimeResponseDto.toDtoModelList(result.getContent()))
+                        .isLast(result.isLast())
+                        .build()
+        );
     }
 
-    public PagingResponseDto getNameAnime(Integer page, Integer pageSize) {
+    public ResponseEntity<PagingResponseDto> getNameAnime(Integer page, Integer pageSize) {
         Slice<AnimeDbModel> result = pagingRepo.findAllBy(PageRequest.of(page, pageSize, Sort.by("name").descending()));
-        return PagingResponseDto
-                .builder()
-                .animeResponseDtoList(AnimeResponseDto.toDtoModelList(result.getContent()))
-                .isLast(result.isLast())
-                .build();
+        return ResponseEntity.ok(
+                PagingResponseDto.builder()
+                        .animeResponseDtoList(PagingAnimeResponseDto.toDtoModelList(result.getContent()))
+                        .isLast(result.isLast())
+                        .build()
+        );
     }
 
-    public PagingResponseDto getFilmAnime(Integer page, Integer pageSize) {
+    public ResponseEntity<PagingResponseDto> getFilmAnime(Integer page, Integer pageSize) {
         Slice<AnimeDbModel> result = pagingRepo.findAllBy(PageRequest.of(page, pageSize, Sort.by("kind").ascending()));
-        return PagingResponseDto
-                .builder()
-                .animeResponseDtoList(AnimeResponseDto.toDtoModelList(result.getContent()))
-                .isLast(result.isLast())
-                .build();
+        return ResponseEntity.ok(
+                PagingResponseDto.builder()
+                        .animeResponseDtoList(PagingAnimeResponseDto.toDtoModelList(result.getContent()))
+                        .isLast(result.isLast())
+                        .build()
+        );
     }
 
 

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class AnimeResponseDto {
+public class PagingAnimeResponseDto {
 
     private Integer id;
     private String name;
@@ -29,13 +29,11 @@ public class AnimeResponseDto {
     private String rating;
     private Integer duration;
     private Boolean favoured;
-
-    private Boolean is_favourite;
     private List<GenreResponseDto> genres;
     private List<SimilarResponseDto> similar;
 
     @Builder
-    public AnimeResponseDto(
+    public PagingAnimeResponseDto(
             Integer id,
             String name,
             String russian,
@@ -53,8 +51,7 @@ public class AnimeResponseDto {
             Integer duration,
             Boolean favoured,
             List<GenreResponseDto> genres,
-            List<SimilarResponseDto> similar,
-            Boolean isFavourite
+            List<SimilarResponseDto> similar
     ) {
         this.id = id;
         this.name = name;
@@ -74,19 +71,18 @@ public class AnimeResponseDto {
         this.favoured = favoured;
         this.genres = genres;
         this.similar = similar;
-        this.is_favourite = isFavourite;
     }
 
-    public static List<AnimeResponseDto> toDtoModelList(Collection<AnimeDbModel> dbModels, Boolean isFavourite) {
-        List<AnimeResponseDto> animeResponseDtoList = new ArrayList<AnimeResponseDto>();
+    public static List<PagingAnimeResponseDto> toDtoModelList(Collection<AnimeDbModel> dbModels) {
+        List<PagingAnimeResponseDto> animeResponseDtoList = new ArrayList<PagingAnimeResponseDto>();
         for (AnimeDbModel dbModel : dbModels) {
-            animeResponseDtoList.add(toDtoModel(dbModel, isFavourite));
+            animeResponseDtoList.add(toDtoModel(dbModel));
         }
         return animeResponseDtoList;
     }
 
-    public static AnimeResponseDto toDtoModel(AnimeDbModel dbModel, boolean isFavourite) {
-        return new AnimeResponseDto(
+    public static PagingAnimeResponseDto toDtoModel(AnimeDbModel dbModel) {
+        return new PagingAnimeResponseDto(
                 dbModel.getId(),
                 dbModel.getName(),
                 dbModel.getRussian(),
@@ -107,8 +103,7 @@ public class AnimeResponseDto {
                 dbModel.getDuration(),
                 dbModel.getFavoured(),
                 GenreResponseDto.toDbModelList(dbModel.getGenres()),
-                SimilarResponseDto.toDbModelList(dbModel.getSimilar()),
-                isFavourite
+                SimilarResponseDto.toDbModelList(dbModel.getSimilar())
         );
     }
 }

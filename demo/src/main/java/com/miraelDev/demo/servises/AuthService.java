@@ -137,6 +137,7 @@ public class AuthService {
             if (!userRepository.existsByUsername(username)) {
 
                 AppUser user = new AppUser(
+                        name,
                         username,
                         email,
                         null,
@@ -169,7 +170,10 @@ public class AuthService {
 
         if (!userRepository.existsByUsername(username)) {
 
+            System.out.println(email == null);
+
             AppUser user = new AppUser(
+                    profile.getFirst_name(),
                     username,
                     email,
                     null,
@@ -197,7 +201,6 @@ public class AuthService {
         return ResponseEntity.badRequest().body("Error: Couldn't verify email");
     }
 
-
     public ResponseEntity<?> refreshToken(String requestRefreshToken) {
         System.out.println(requestRefreshToken);
         return refreshTokenService.findByToken(requestRefreshToken)
@@ -211,7 +214,6 @@ public class AuthService {
                         new TokenRefreshException(requestRefreshToken, "Refresh token is not in database!")
                 );
     }
-
 
     public ResponseEntity<?> checkEmail(String email) {
 
