@@ -50,7 +50,11 @@ public class UserService {
 
             AppUser user = optUser.get();
 
-            if (encoder.matches(currentPassword, user.getPassword()) && newPassword.equals(repeatedPassword) && isValidPassword(newPassword)) {
+            if (
+                    encoder.matches(currentPassword, user.getPassword()) &&
+                            newPassword.equals(repeatedPassword) &&
+                            isValidPassword(newPassword)
+            ) {
                 user.setPassword(encoder.encode(newPassword));
                 userRepository.save(user);
                 return ResponseEntity.ok("save successfully");

@@ -29,5 +29,6 @@ public class AnimeInfoDto {
     private String franchise;
     private Boolean favoured;
     private List<GenreDto> genres;
+    private List<ScoreStatsDto> rates_scores_stats;
 
 }

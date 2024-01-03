@@ -2,51 +2,26 @@ package com.miraelDev.demo;
 
 
 import com.miraelDev.demo.models.dbModels.*;
-import com.miraelDev.demo.models.responseDto.AnimeResponseDto;
 import com.miraelDev.demo.models.responseDto.PagingResponseDto;
 import com.miraelDev.demo.payload.FavouriteAnimeRequest;
 import com.miraelDev.demo.servises.*;
 import com.miraelDev.demo.shikimory.ApiFactory;
-import com.miraelDev.demo.shikimory.Episode;
-import com.miraelDev.demo.shikimory.JutSu;
 import com.miraelDev.demo.shikimory.dto.*;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.jcodec.api.FrameGrab;
-import org.jcodec.common.model.Picture;
-import org.jcodec.scale.AWTUtil;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.graphql.client.GraphQlClient;
-import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 @RestController
@@ -68,257 +43,10 @@ public class CommonController {
 
     private DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-    private HttpClient client = HttpClient.newBuilder()
-            .build();
-
-    private Integer findIdByAnimeNameInGraphQl(String animeName) {
-        WebClient wc = WebClient.create("https://shikimori.one/api/graphql");
-        GraphQlClient client = HttpGraphQlClient.create(wc);
-        String document = """
-                    query ($search: String) {
-                      animes(search: $search) {
-                                id
-                      }
-                    }
-                """;
-
-        AnimeDto response = client.document(document)
-                .variable("search", animeName)
-                .execute()
-                .block()
-                .toEntity(AnimeDto.class);
-
-        return response.getAnimes()[0].getId();
-    }
-
-    private Set<VideoDbModel> loadVideos(String animeLink, Integer animeId, AnimeDbModel dbModel) {
-        try {
-
-            JutSu inst = new JutSu(animeLink);
-
-            List<Episode> episodes = inst.getAllEpisodes();
-
-            Set<VideoDbModel> videoDbModelList = new HashSet<>();
-
-            List<Thread> qualityThreads = new LinkedList<>();
-            List<Thread> seriesThreads = new LinkedList<>();
-
-            for (Episode episode : episodes) {
-                System.out.println(episode.name);
-
-                String series = episode.href
-                        .substring(
-                                episode.href.lastIndexOf("/") + 1,
-                                episode.href.lastIndexOf(".")
-                        );
-
-                VideoDbModel videoDbModel = VideoDbModel.builder()
-                        .videoName(episode.name)
-                        .build();
-
-                String seriesDirPath = "C:\\Users\\1\\Desktop\\videos" + "\\" + animeId + "\\" + episode.season + "\\" + series + "\\";
-
-                if (!new File(seriesDirPath).exists())
-                    new File(seriesDirPath).mkdirs();
-
-                String link480 = null;
-
-                link480 = inst.getDownloadLink(episode.href, "480p");
-
-                if (link480 != null) {
-
-                    downloadVideo(
-                            inst.getClient(),
-                            link480,
-                            seriesDirPath + "480" + "\\",
-                            seriesDirPath + "480" + "\\" + episode.name + ".mp4"
-                    );
-
-                    String link = seriesDirPath + "480" + "\\" + episode.name + ".mp4";
-                    Path path = Paths.get(seriesDirPath);
-
-                    File file = new File(link);
-
-                    int frameNumber = 360;
-
-                    try {
-                        Picture picture = FrameGrab.getFrameFromFile(file, frameNumber);
-                        BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
-                        ImageIO.write(bufferedImage, "png", new File(path + "\\thumbnail.png"));
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-
-                    videoDbModel.setVideoUrl480("/api/v1/videos/" + animeId + "/" + episode.season + "/" + series + "/480/" + episode.name + ".mp4");
-                    videoDbModel.setVideoImage("/api/v1/videos/" + animeId + "/" + episode.season + "/" + series + "/480/" + episode.name + ".png");
-
-                }
-//
-                String link720 = null;
-
-                link720 = inst.getDownloadLink(episode.href, "720p");
-
-                if (link720 != null) {
-
-                    downloadVideo(
-                            inst.getClient(),
-                            link720,
-                            seriesDirPath + "720" + "\\",
-                            seriesDirPath + "720" + "\\" + episode.name + ".mp4"
-                    );
-
-                    videoDbModel.setVideoUrl720("/api/v1/videos/" + animeId + "/" + episode.season + "/" + series + "/720/" + episode.name + ".mp4");
-
-                }
-
-
-                String link1080 = null;
-                link1080 = inst.getDownloadLink(episode.href, "1080p");
-
-
-                if (link1080 != null) {
-
-                    downloadVideo(
-                            inst.getClient(),
-                            link1080,
-                            seriesDirPath + "1080" + "\\",
-                            seriesDirPath + "1080" + "\\" + episode.name + ".mp4"
-                    );
-
-                    videoDbModel.setVideoUrl1080("/api/v1/videos/" + animeId + "/" + episode.season + "/" + series + "/1080/" + episode.name + ".mp4");
-
-
-                }
-
-
-                videoDbModel.setAnime(dbModel);
-
-                videoDbModelList.add(videoDbModel);
-            }
-
-            return videoDbModelList;
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        } catch (InterruptedException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private Map<String, String> getAnimeNamesFromJutsu() throws IOException, InterruptedException {
-
-        Map<String, String> animeLinks = new HashMap();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://jut.su/anime/2008-2014/"))
-                .setHeader("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
-                .build();
-
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        Document doc = Jsoup.parse(response.body());
-
-        Elements episodes = doc.select("div.all_anime_global");
-
-        for (Element el : episodes) {
-            if (el.select("div.aaname").text().equals("Ван Пис")) continue;
-
-            animeLinks.put("https://jut.su" + el.select("a").attr("href"), el.select("div.aaname").text());
-        }
-        return animeLinks;
-    }
-
-    private AnimeSeasonModel getAnimeSeasonsFromJutsu(String link, String name) throws
-            IOException, InterruptedException {
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(link))
-                .setHeader("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
-                .build();
-
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        Document doc = Jsoup.parse(response.body());
-
-        Elements titles = doc.select("h2.b-b-title");
-        Elements seasonLinks = doc.select("div.the_invis");
-        Elements videoLinks = doc.select("a.short-btn");
-
-        List<String> titlesList = new LinkedList<>();
-        List<String> seasonsLinksList = new LinkedList<>();
-        List<String> filmLinksList = new LinkedList<>();
-        List<String> filmNamesList = new LinkedList<>();
-
-        for (Element el : seasonLinks) {
-            seasonsLinksList.add("https://jut.su/" + el.select("a").attr("href"));
-        }
-        for (Element el : titles) {
-            titlesList.add(el.text());
-        }
-        for (Element el : videoLinks) {
-            if (el.attr("href").contains("film")) {
-                filmLinksList.add("https://jut.su/" + el.attr("href"));
-            }
-        }
-
-        for (String title : titlesList) {
-            if (!title.contains("сезон")) {
-                titlesList.remove(title);
-            }
-        }
-        AtomicInteger count = new AtomicInteger();
-        if (!filmLinksList.isEmpty()) {
-            filmLinksList.forEach((filmLink) -> {
-                count.getAndIncrement();
-                HttpRequest filmRequest = HttpRequest.newBuilder()
-                        .uri(URI.create(filmLink))
-                        .setHeader("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
-                        .build();
-
-                try {
-                    HttpResponse<String> filmResponse = client.send(filmRequest, HttpResponse.BodyHandlers.ofString());
-
-                    Document filmDoc = Jsoup.parse(filmResponse.body());
-
-                    String filmName = filmDoc.select("div.video_plate_title").select("h2").text();
-
-                    if (filmName.isEmpty()) {
-                        filmNamesList.add(count.get() + " фильм");
-                    } else {
-                        filmNamesList.add(filmName);
-                    }
-
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-
-        AnimeSeasonModel animeSeasonModel = new AnimeSeasonModel();
-
-        if (seasonsLinksList.isEmpty()) {
-            animeSeasonModel.setSeasonLinks(List.of(link));
-            animeSeasonModel.setNamesForGraphQl(List.of(name));
-            animeSeasonModel.setFilmsLinks(filmLinksList);
-            animeSeasonModel.setFilmsNameForGraphQl(filmNamesList);
-        } else {
-            animeSeasonModel.setSeasonLinks(seasonsLinksList);
-            animeSeasonModel.setNamesForGraphQl(titlesList);
-            animeSeasonModel.setFilmsLinks(filmLinksList);
-            animeSeasonModel.setFilmsNameForGraphQl(filmNamesList);
-        }
-        return animeSeasonModel;
-    }
-
-    private void loadAnime(String animeName, String seasonUrl) throws IOException, ParseException {
-        Integer animeId = findIdByAnimeNameInGraphQl(animeName);
-        System.out.println("anime id: " + animeId);
-        AnimeInfoDto dto = ApiFactory.apiService.getAnime(animeId).execute().body();
-        List<SimilarAnimeDto> similarDto = ApiFactory.apiService.getSimilarAnime(animeId).execute().body();
+    private void loadAnime(Integer id) throws IOException, ParseException {
+        System.out.println("anime id: " + id);
+        AnimeInfoDto dto = ApiFactory.apiService.getAnime(id).execute().body();
+        List<SimilarAnimeDto> similarDto = ApiFactory.apiService.getSimilarAnime(id).execute().body();
 
         if (dto != null) {
 
@@ -377,7 +105,7 @@ public class CommonController {
 
             System.out.println("db model:" + dbModel);
 
-            Set<VideoDbModel> videoDbModelList = loadVideos(seasonUrl, animeId, dbModel);
+            Set<VideoDbModel> videoDbModelList = getLinksFromDownloadedVideos(id);
 
             dbModel.setVideoDbModels(videoDbModelList);
 
@@ -390,103 +118,61 @@ public class CommonController {
         }
     }
 
-    private Integer getSeriesCount(String link) throws IOException, InterruptedException {
+    private Set<VideoDbModel> getLinksFromDownloadedVideos(Integer id) {
+        Set<VideoDbModel> result = new LinkedHashSet<>();
+        File[] animeIds = Paths.get("D:/videos/" + id.toString()).toFile().listFiles();
+        Arrays.stream(Objects.requireNonNull(animeIds)).toList().forEach(animeId -> {
+                    String animeIdName = animeId.getName();
+                    Arrays.stream(Objects.requireNonNull(animeId.listFiles())).toList().forEach(season -> {
+                                String seasonName = season.getName();
+                                Arrays.stream(Objects.requireNonNull(season.listFiles())).toList().forEach(serie -> {
+                                            VideoDbModel videoDbModel = new VideoDbModel();
+                                            String serieName = serie.getName();
+                                            File[] qualitiesAndImageFiles = serie.listFiles();
+                                            String quality480 = qualitiesAndImageFiles[0].listFiles()[0].getName();
+                                            String quality720 = qualitiesAndImageFiles[1].listFiles()[0].getName();
+                                            String quality1080 = qualitiesAndImageFiles[2].listFiles()[0].getName();
+                                            String imageName = qualitiesAndImageFiles[3].getName();
+                                            videoDbModel.setVideoUrl480(animeIdName + "/" + seasonName + "/" + serieName + "/480/" + quality480);
+                                            videoDbModel.setVideoUrl720(animeIdName + "/" + seasonName + "/" + serieName + "/720/" + quality720);
+                                            videoDbModel.setVideoUrl1080(animeIdName + "/" + seasonName + "/" + serieName + "/1080/" + quality1080);
+                                            videoDbModel.setVideoImage(imageName);
+                                            videoDbModel.setVideoName(quality480);
+                                            result.add(videoDbModel);
+                                        }
+                                );
+                            }
+                    );
+                }
+        );
+        return result;
+    }
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(link))
-                .setHeader("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
-                .build();
-
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        Document doc = Jsoup.parse(response.body());
-
-        Elements series = doc.select("a.short-btn");
-
-        return series.size();
+    private List<String> getIdsFromDownloadsAnime() {
+        List<String> result = new ArrayList<>();
+        Path dir = Paths.get("D:/videos/");
+        try {
+            Files.walk(dir).forEach(path -> result.add(path.toFile().getName()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     @GetMapping
     public void main() throws IOException, URISyntaxException, InterruptedException {
 
-        Map<String, String> animeNames = getAnimeNamesFromJutsu();
+        List<String> animeNames = getIdsFromDownloadsAnime();
 
-        animeNames.forEach((link, name) -> {
-
+        animeNames.forEach((id) -> {
             try {
-
-                Integer count = getSeriesCount(link);
-
-                if (count < 16) {
-                    AnimeSeasonModel animeSeasonModel = getAnimeSeasonsFromJutsu(link, name);
-
-                    System.out.println(animeSeasonModel);
-
-                    for (int i = 0; i < animeSeasonModel.getSeasonLinks().size(); i++) {
-
-                        String animeName = animeSeasonModel.getNamesForGraphQl().get(i);
-                        String seasonUrl = animeSeasonModel.getSeasonLinks().get(i);
-                        System.out.println("animename: " + animeName);
-                        System.out.println("seasonurl: " + seasonUrl);
-                        loadAnime(animeName, seasonUrl);
-
-                    }
-
-                    for (int i = 0; i < animeSeasonModel.getFilmsLinks().size(); i++) {
-
-                        String animeFilmName = animeSeasonModel.getFilmsNameForGraphQl().get(i);
-                        String filmUrl = animeSeasonModel.getFilmsLinks().get(i);
-
-                        System.out.println("animeFilmName: " + animeFilmName);
-                        System.out.println("filmUrl: " + filmUrl);
-
-                        loadAnime(animeFilmName, filmUrl);
-
-                    }
-                    System.out.println("\n\n\n");
-                }
-
-
+                loadAnime(Integer.parseInt(id));
             } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
         });
-    }
-
-
-    @Async
-    public static void downloadVideo(HttpClient client, String link, String dirPath, String path) throws
-            IOException, InterruptedException {
-
-
-        if (!new File(dirPath).exists())
-            new File(dirPath).mkdirs();
-
-
-        System.out.println("Start downloading " + path);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(link))
-                .setHeader("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2")
-                .build();
-
-        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
-        try (InputStream is = response.body(); OutputStream fos = new FileOutputStream(path)) {
-            byte[] buffer = new byte[1024];
-            int length;
-
-            while ((length = is.read(buffer)) != -1)
-                fos.write(buffer, 0, length);
-        }
-
-
-        System.out.println(path + " downloaded!");
     }
 
 
@@ -539,15 +225,15 @@ public class CommonController {
     }
 
     @GetMapping("/id")
-    public ResponseEntity<AnimeResponseDto> getAnimeById(@RequestParam("anime_id") Long
-                                                                 animeId, @RequestParam("user_id") Long userId) {
+    public ResponseEntity<?> getAnimeById(
+            @RequestParam("anime_id") Long animeId,
+            @RequestParam("user_id") Long userId
+    ) {
         return animeService.getAnimeById(animeId, userId);
     }
 
     @PostMapping("/id/favourite")
-    public ResponseEntity<String> setAnimeFavouriteStatus(@RequestBody FavouriteAnimeRequest
-                                                                  favouriteAnimeRequest) {
-        System.out.println(favouriteAnimeRequest);
+    public ResponseEntity<String> setAnimeFavouriteStatus(@RequestBody FavouriteAnimeRequest favouriteAnimeRequest) {
         return animeService.setAnimeFavouriteStatus(
                 favouriteAnimeRequest.getAnime_id(),
                 favouriteAnimeRequest.getUser_id(),

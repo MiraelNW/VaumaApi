@@ -23,10 +23,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,8 +41,7 @@ import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
-@RestController
-@RequestMapping("/api/v1/auth")
+@Service
 public class AuthService {
 
     @Value("${vauma.app.googleClientId}")
@@ -69,24 +70,28 @@ public class AuthService {
 
     public ResponseEntity<?> authenticateUser(String username, String password) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
-        );
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        String jwt = jwtUtils.generateJwtToken(userDetails);
+            String jwt = jwtUtils.generateJwtToken(userDetails);
 
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-        return ResponseEntity.ok(
-                new JwtResponse(
-                        jwt,
-                        refreshToken.getToken()
-                )
-        );
+            return ResponseEntity.ok(
+                    new JwtResponse(
+                            jwt,
+                            refreshToken.getToken()
+                    )
+            );
+        } catch (AuthenticationException exception) {
+            return ResponseEntity.badRequest().body(exception.getMessage());
+        }
     }
 
     public ResponseEntity<?> registerUser(AppUser user, MultipartFile imageFile) {
@@ -127,7 +132,6 @@ public class AuthService {
                 .build();
         GoogleIdToken idToken = verifier.verify(idTokenString);
 
-        System.out.println(idToken);
         if (idToken != null) {
             GoogleIdToken.Payload payload = idToken.getPayload();
             String email = payload.getEmail();
@@ -191,7 +195,9 @@ public class AuthService {
         ConfirmationToken token = confirmationTokenRepository.findByOtpToken(otpToken);
 
         if (token != null) {
-            AppUser user = userRepository.findByEmailIgnoreCase(token.getUser().getEmail());
+            Optional<AppUser> optUser = userRepository.findByEmailIgnoreCase(token.getUser().getEmail());
+            if (optUser.isEmpty()) return ResponseEntity.badRequest().body("Error: Couldn't find user");
+            AppUser user = optUser.get();
             user.setEnabled(true);
             userRepository.save(user);
             confirmationTokenRepository.deleteByOtpToken(token.getOtpToken());
@@ -217,8 +223,10 @@ public class AuthService {
 
     public ResponseEntity<?> checkEmail(String email) {
 
-        AppUser user = userRepository.findByEmailIgnoreCase(email);
+        Optional<AppUser> optUser = userRepository.findByEmailIgnoreCase(email);
+        if (optUser.isEmpty()) return ResponseEntity.badRequest().body("Error: Couldn't find user");
 
+        AppUser user = optUser.get();
         if (user != null) {
             String code = generateCode();
 
@@ -245,8 +253,10 @@ public class AuthService {
 
     public ResponseEntity<?> createNewPassword(String email, String password) {
 
-        AppUser user = userRepository.findByEmailIgnoreCase(email);
+        Optional<AppUser> optUser = userRepository.findByEmailIgnoreCase(email);
+        if (optUser.isEmpty()) return ResponseEntity.badRequest().body("Error: Couldn't find user");
 
+        AppUser user = optUser.get();
         user.setPassword(encoder.encode(password));
         user.setEnabled(true);
 
@@ -293,7 +303,10 @@ public class AuthService {
 
     private ResponseEntity<?> authWithGoogle(String email) {
 
-        AppUser user = userRepository.findByEmailIgnoreCase(email);
+        Optional<AppUser> optUser = userRepository.findByEmailIgnoreCase(email);
+        if (optUser.isEmpty()) return ResponseEntity.badRequest().body("Error: Couldn't find user");
+
+        AppUser user = optUser.get();
         user.setEnabled(true);
         userRepository.save(user);
 

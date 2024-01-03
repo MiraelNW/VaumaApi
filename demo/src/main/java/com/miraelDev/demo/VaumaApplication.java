@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync(proxyTargetClass = true)
 public class VaumaApplication {
 
-
     public static void main(String[] args) {
         SpringApplication.run(VaumaApplication.class, args);
     }

@@ -5,6 +5,7 @@ import com.miraelDev.demo.models.dbModels.AnimeDbModel;
 import com.miraelDev.demo.models.responseDto.AnimeResponseDto;
 import com.miraelDev.demo.repositories.UserRepository;
 import com.miraelDev.demo.repositories.anime.AnimeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -25,15 +26,19 @@ public class AnimeService {
     @Autowired
     private UserRepository userRepository;
 
-    public ResponseEntity<AnimeResponseDto> getAnimeById(Long animeId, Long userId) {
+    public ResponseEntity<?> getAnimeById(Long animeId, Long userId) {
 
-        AnimeDbModel animeDbModel = animeRepository.getReferenceById(animeId);
+        try {
+            AnimeDbModel animeDbModel = animeRepository.getReferenceById(animeId);
 
-        AppUser appUser = userRepository.getReferenceById(userId);
+            AppUser appUser = userRepository.getReferenceById(userId);
 
-        boolean isFavourite = appUser.getAnimeFavouriteList().contains(animeId);
+            boolean isFavourite = appUser.getAnimeFavouriteList().contains(animeId);
 
-        return ResponseEntity.ok(AnimeResponseDto.toDtoModel(animeDbModel, isFavourite));
+            return ResponseEntity.ok(AnimeResponseDto.toDtoModel(animeDbModel, isFavourite));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body("anime id is inccorect");
+        }
     }
 
     public ResponseEntity<String> setAnimeFavouriteStatus(Long animeId, Long userId, Boolean isFavourite) {

@@ -67,6 +67,10 @@ public class AnimeDbModel implements Serializable {
     @ToString.Exclude
     private Set<VideoDbModel> videoDbModels = new HashSet<>();
 
+    public AnimeDbModel(Integer id) {
+        this.id = id;
+    }
+
     @Builder
     public AnimeDbModel(
             Integer id,

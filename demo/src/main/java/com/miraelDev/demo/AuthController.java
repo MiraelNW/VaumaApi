@@ -29,7 +29,6 @@ public class AuthController {
 
     @PostMapping(value = "/signin", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> authenticateUser(@RequestBody SignInModel loginRequest) {
-        System.out.println(loginRequest);
         return authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
     }
 
